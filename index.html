@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>JEE Mind Map Viewer</title>
+  <!-- Google tag (gtag.js) -->
+  <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-9QE4VB9HJK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-9QE4VB9HJK');
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer-when-downgrade">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="status">Optimizing Focus…</div>
+  <img id="watermark" src="logo.png" alt="Watermark">
+  <svg id="mindmap"></svg>
+  <button id="fullscreen-btn" title="Toggle Fullscreen">
+    <svg viewBox="0 0 24 24" width="18" height="18">
+      <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+    </svg>
+  </button>
+
+  <script>
+    async function init() {
+      const status = document.getElementById('status');
+
+      try {
+         /* ---------- URL PARAMS ---------- */
+        const params = new URLSearchParams(window.location.search);
+        const subject = params.get('subject');
+        const map = params.get('map');
+
+        if (!subject || !map) {
+          throw new Error("Use ?subject=Physics&map=kinematics1d");
+        }
+
+        /* ---------- S3 PATH ---------- */
+        const MD_URL = `./${subject}/${map}.md`;
+
+        status.textContent = `Loading ${map.replace(/-/g, ' ')}…`;
+        /* ---------- FETCH MARKDOWN ---------- */
+
+        const res = await fetch(MD_URL);
+        if (!res.ok) throw new Error("Mind map not found");
+        const markdown = await res.text();
+
+        const { Transformer, Markmap } = window.markmap;
+        const transformer = new Transformer();
+        const { root } = transformer.transform(markdown);
+
+        status.style.display = 'none';
+
+        const mm = Markmap.create('#mindmap', {
+          initialExpandLevel: 2,
+          zoom: true,
+          pan: true,
+          duration: 300,
+          spacingHorizontal: 150,
+          spacingVertical: 15,
+          color: (node) => (node.depth === 0 ? '#ffffff' : '#3b82f6'),
+          maxWidth: 300,
+        }, root);
+
+        mm.setOptions({
+          nodeMinHeight: 25,
+          paddingX: 30,
+        });
+
+        // 1. Fullscreen Toggle Logic
+        const fsBtn = document.getElementById('fullscreen-btn');
+        fsBtn.addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+        });
+
+        // 2. Node Click: Toggle and Center Focus
+        document.getElementById('mindmap').addEventListener('click', (e) => {
+          const nodeGroup = e.target.closest('g[data-id]');
+          if (nodeGroup) {
+            const data = d3.select(nodeGroup).datum();
+            if (data && data.children) {
+              mm.toggleNode(data);
+
+              // Center the view on the map after expansion
+              setTimeout(() => {
+                mm.fit();
+              }, 50);
+            }
+          }
+        });
+
+        // Initial centering
+        setTimeout(() => mm.fit(), 200);
+        window.addEventListener('resize', () => mm.fit());
+
+      } catch (err) {
+        status.style.display = 'block';
+        status.style.background = '#ef4444';
+        status.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
