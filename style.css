@@ -1,6 +1,6 @@
-/* =========================================================
+/*
    PAGE BACKGROUND
-   ========================================================= */
+   */
 
 html,
 body {
@@ -13,9 +13,9 @@ body {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* =========================================================
+/* 
    SVG CANVAS
-   ========================================================= */
+    */
 
 svg.markmap {
   width: 100vw;
@@ -33,7 +33,7 @@ svg.markmap {
   opacity: 1 !important;
 }
 
-/* --- 2. MARKMAP SPECIFIC CSS --- */
+/* MARKMAP SPECIFIC CSS  */
 
 /* Style the Text Content */
 .markmap-foreign div {
@@ -97,9 +97,9 @@ svg.markmap {
 /* Optional: hide button when in fullscreen if desired */
 /* :fullscreen #fullscreen-btn { display: none; } */
 
-/* =========================================================
+/* 
    WATERMARK (FIXED – VERY SUBTLE)
-   ========================================================= */
+   */
 
 #watermark {
   position: fixed;
@@ -116,9 +116,9 @@ svg.markmap {
   z-index: 0;
 }
 
-/* =========================================================
+/* 
    STATUS BANNER
-   ========================================================= */
+ */
 
 #status {
   position: fixed;
