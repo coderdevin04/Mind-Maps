@@ -123,7 +123,7 @@ markmap:
 ##### a. The proportional limit (A) is the point where the linear relationship ends
 ##### b. The yield point (B) marks the elastic limit beyond which permanent deformation (permanent set) occurs
 ##### c. The fracture point (D) is where the material eventually breaks under excessive stress
-###B. Elastic Moduli
+### B. Elastic Moduli
 #### 1. Young’s Modulus ($Y$)
 ##### a. Relates longitudinal stress to longitudinal strain in solids like wires and rods
 ##### b. A rod under tension can be treated as a spring with a spring constant $k = YA/L$
