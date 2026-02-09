@@ -59,8 +59,10 @@ markmap:
 ##### b. For incompressible fluids, $A_1v_1 = A_2v_2$, meaning velocity is inversely proportional to the cross-sectional area
 ##### c. In cases of variable density (e.g., mixing hot and cold water), the full form $\rho_1A_1v_1 = \rho_2A_2v_2$ must be used
 ### B. Energy in Fluid Systems (Bernoulli's Theorem)
-#### 1. Bernoulli’s Equation Componentsa. Pressure energy per unit volume is represented by the pressure $P$
-##### b. Kinetic energy per unit volume is $\frac{1}{2}\rho v^2$ 80, 82, 83.c. Potential energy per unit volume is $\rho gh$
+#### 1. Bernoulli’s Equation Components
+##### a. Pressure energy per unit volume is represented by the pressure $P$
+##### b. Kinetic energy per unit volume is $\frac{1}{2}\rho v^2$ 
+##### c. Potential energy per unit volume is $\rho gh$
 #### 2. Energy Conservation Principle
 ##### a. For an ideal fluid in steady, non-viscous flow, the sum $P + \frac{1}{2}\rho v^2 + \rho gh$ is constant along a streamline
 ##### b. In a horizontal pipe where $\rho gh$ is constant, an increase in fluid velocity leads to a decrease in pressure
@@ -133,5 +135,6 @@ markmap:
 ##### b. Compressibility is defined as the reciprocal of the bulk modulus ($1/B$)
 ##### c. Pressure increase $dP$ causes a volume decrease $dV$, governed by $B = -dP / (dV/V)$
 #### 3. Shear Modulus ($\eta$)
-##### a. Relates shear stress to shear strain, measuring resistance to change in shape 185, 186.b. Shear strain is typically expressed as the angle of deformation $\phi$
+##### a. Relates shear stress to shear strain, measuring resistance to change in shape 185, 186.
+##### b. Shear strain is typically expressed as the angle of deformation $\phi$
 ##### c. This modulus describes the sliding of parallel layers of a solid block
