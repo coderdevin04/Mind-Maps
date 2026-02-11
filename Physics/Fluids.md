@@ -96,8 +96,8 @@ markmap:
 ##### c. Terminal velocity is given by $v_t = \frac{2r^2g(\sigma - \rho)}{9\eta}$
 #### 3. Flow Regimes and Reynolds Number
 ##### a. The transition from laminar to turbulent flow is predicted by the Reynolds number $R_e = \rho vd/\eta$
-##### b. Flow is typically laminar if $R_e < 1000$ and turbulent if $R_e > 2000$
-##### c. The region between $1000$ and $2000$ is considered an unstable buffer zone
+##### b. Flow is typically laminar if $R_e < 2300$ and turbulent if $R_e > 2900$
+##### c. The region between $2300$ and $2900$ is considered an unstable buffer zone
 ### B. Surface Tension
 #### 1. Molecular Basis and Force
 ##### a. Surface tension ($T$ or $S$) arises because surface molecules have fewer neighbouring bonds than interior molecules, resulting in extra energy
