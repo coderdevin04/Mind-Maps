@@ -308,7 +308,7 @@ function makeCard(m) {
   const a = document.createElement('a');
   a.className = 'map-card';
   a.style.setProperty('--acc', color);
-  a.href = `index.html?subject=${encodeURIComponent(m.subject)}&map=${encodeURIComponent(m.map)}`;
+  a.href = `viewer.html?subject=${encodeURIComponent(m.subject)}&map=${encodeURIComponent(m.map)}`;
   a.innerHTML = `
     <div class="crow">
       <div class="cicon" style="background:${color}1f">${icon}</div>
@@ -332,7 +332,7 @@ function showError(msg) {
       <h3>⚠ Could not load mind maps</h3>
       <p>${msg}<br><br>
       GitHub API allows 60 unauthenticated requests/hr. If you hit that limit, wait a minute and refresh.<br>
-      Direct link example: <code>index.html?subject=Physics&amp;map=kinematics</code></p>
+      Direct link example: <code>viewer.html?subject=Physics&amp;map=kinematics</code></p>
     </div></div>`;
 }
 
