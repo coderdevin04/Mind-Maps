@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MindAtlas — JEE Mind Maps</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --card: #18181d;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #f0f0f0;
+      --muted: #555;
+      --dim: #888;
+      --Physics:   #3b82f6;
+      --Chemistry: #22d3a5;
+      --Maths:     #f59e0b;
+      --Biology:   #a78bfa;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.3;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 550px; height: 550px; background: rgba(59,130,246,0.055); top: -150px; right: -150px; }
+    .orb-2 { width: 380px; height: 380px; background: rgba(34,211,165,0.04); bottom: -80px; left: 0; }
+
+    .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* HEADER */
+    header { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #fff; letter-spacing: -0.4px; }
+    .logo span { color: var(--Physics); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--dim); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; }
+    .icon-btn { width: 30px; height: 30px; background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
+    .icon-btn:hover { border-color: var(--border-hover); color: #fff; }
+    .icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+
+    /* HERO */
+    .hero { padding: 50px 40px 32px; animation: fadeUp 0.5s ease both; }
+    .eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--Physics); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 14px; }
+    .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4vw, 46px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; color: #fff; }
+    .hero h1 em { font-style: normal; color: var(--Physics); }
+    .hero p { margin-top: 12px; font-size: 15px; color: var(--dim); font-weight: 300; line-height: 1.7; max-width: 460px; }
+
+    /* TABS */
+    .tabs-section { padding: 28px 40px 0; animation: fadeUp 0.5s 0.07s ease both; }
+    .slabel { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tab {
+      display: flex; align-items: center; gap: 8px; padding: 9px 15px;
+      border-radius: 8px; background: var(--card); border: 1px solid var(--border);
+      cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--dim); transition: all 0.18s; white-space: nowrap;
+    }
+    .tab .dot { width: 7px; height: 7px; border-radius: 50%; background: #444; flex-shrink: 0; }
+    .tab .cnt { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+    .tab:hover { border-color: var(--border-hover); color: #ccc; }
+    .tab.active { color: #fff; }
+    .tab[data-s="All"].active       { border-color: rgba(255,255,255,0.22); }
+    .tab[data-s="Physics"].active   { border-color: var(--Physics);   box-shadow: 0 0 0 1px var(--Physics),   inset 0 0 20px rgba(59,130,246,0.06); }
+    .tab[data-s="Chemistry"].active { border-color: var(--Chemistry); box-shadow: 0 0 0 1px var(--Chemistry), inset 0 0 20px rgba(34,211,165,0.06); }
+    .tab[data-s="Maths"].active     { border-color: var(--Maths);     box-shadow: 0 0 0 1px var(--Maths),     inset 0 0 20px rgba(245,158,11,0.06); }
+    .tab[data-s="Biology"].active   { border-color: var(--Biology);   box-shadow: 0 0 0 1px var(--Biology),   inset 0 0 20px rgba(167,139,250,0.06); }
+    .tab[data-s="Physics"]   .dot { background: var(--Physics); }
+    .tab[data-s="Chemistry"] .dot { background: var(--Chemistry); }
+    .tab[data-s="Maths"]     .dot { background: var(--Maths); }
+    .tab[data-s="Biology"]   .dot { background: var(--Biology); }
+
+    /* SEARCH */
+    .search-row { padding: 22px 40px 0; display: flex; align-items: center; gap: 12px; animation: fadeUp 0.5s 0.11s ease both; }
+    .sw { position: relative; flex: 1; max-width: 360px; }
+    .sw svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search-input { width: 100%; padding: 9px 12px 9px 34px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border 0.18s; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: rgba(255,255,255,0.16); }
+    .rinfo { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    /* GRID */
+    .maps-section { padding: 18px 40px 60px; flex: 1; animation: fadeUp 0.5s 0.14s ease both; }
+    .maps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 10px; }
+
+    .group-hdr { grid-column: 1/-1; display: flex; align-items: center; gap: 10px; padding-top: 6px; }
+    .group-hdr span { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+    .group-hdr .line { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+
+    /* CARD */
+    .map-card {
+      display: flex; flex-direction: column; gap: 10px; padding: 18px;
+      border-radius: 10px; background: var(--card); border: 1px solid var(--border);
+      cursor: pointer; text-decoration: none; color: inherit;
+      transition: all 0.2s; position: relative; overflow: hidden;
+      animation: fadeUp 0.3s ease both;
+    }
+    .map-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 10px 0 0 10px; opacity: 0; transition: opacity 0.2s; background: var(--acc, #3b82f6); }
+    .map-card:hover { border-color: var(--border-hover); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+    .map-card:hover::before { opacity: 1; }
+
+    .crow { display: flex; align-items: flex-start; justify-content: space-between; }
+    .cicon { width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .carrow { color: var(--muted); transition: transform 0.18s, color 0.18s; margin-top: 2px; }
+    .map-card:hover .carrow { transform: translate(2px,-2px); color: #ccc; }
+    .cname { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px; color: #e8e8e8; line-height: 1.35; }
+    .ctag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); align-self: flex-start; }
+
+    /* STATES */
+    .loading-state { grid-column: 1/-1; padding: 70px 0; text-align: center; }
+    .spinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--Physics); border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto 14px; }
+    .loading-state p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 20px; }
+    .empty-state .ei { font-size: 32px; margin-bottom: 12px; opacity: 0.3; }
+    .empty-state p { font-size: 13px; color: var(--muted); }
+    .error-state { grid-column: 1/-1; padding: 30px; }
+    .ebox { background: rgba(127,29,29,0.18); border: 1px solid rgba(252,165,165,0.12); border-radius: 10px; padding: 20px 24px; }
+    .ebox h3 { font-family: 'Syne', sans-serif; font-size: 14px; color: #fca5a5; margin-bottom: 8px; }
+    .ebox p { font-size: 12px; color: #777; line-height: 1.7; }
+    .ebox code { font-family: 'DM Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+    @media (max-width: 600px) {
+      header, .hero, .tabs-section, .search-row, .maps-section { padding-left: 16px; padding-right: 16px; }
+      .hero { padding-top: 30px; }
+    }
+  </style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="app">
+  <header>
+    <div class="logo">Mind<span>Atlas</span></div>
+    <div class="header-right">
+      <div class="badge">JEE · NEET</div>
+      <button class="icon-btn" id="refresh-btn" title="Reload from GitHub">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Your Study Command Center</div>
+    <h1>Navigate every<br>concept with <em>clarity</em></h1>
+    <p>Interactive mind maps for JEE &amp; NEET. Pick a subject, tap a topic, start learning.</p>
+  </section>
+
+  <section class="tabs-section">
+    <div class="slabel">Filter by subject</div>
+    <div class="tabs" id="tabs"></div>
+  </section>
+
+  <div class="search-row">
+    <div class="sw">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="search" placeholder="Search topics…" autocomplete="off">
+    </div>
+    <span class="rinfo" id="rinfo"></span>
+  </div>
+
+  <section class="maps-section">
+    <div class="maps-grid" id="grid"></div>
+  </section>
+</div>
+
+<script>
+/* ══ CONFIG ══════════════════════════════════════════════════════ */
+const REPO    = 'coderdevin04/Mind-Maps';
+const BRANCH  = 'main';
+/* Add any new subject folder names here when you create them */
+const FOLDERS = ['Physics', 'Chemistry', 'Maths', 'Biology'];
+
+const META = {
+  Physics:   { icon: '⚡', color: '#3b82f6' },
+  Chemistry: { icon: '⚗️', color: '#22d3a5' },
+  Maths:     { icon: '∑',  color: '#f59e0b' },
+  Biology:   { icon: '🧬', color: '#a78bfa' },
+};
+const DEFAULT_META = { icon: '📄', color: '#888' };
+
+/* ══ STATE ═══════════════════════════════════════════════════════ */
+let CATALOG    = [];
+let activeSubj = 'All';
+let query      = '';
+
+/* ══ FETCH ═══════════════════════════════════════════════════════ */
+async function loadCatalog() {
+  showLoading();
+
+  const maps   = [];
+  const errors = [];
+
+  await Promise.all(FOLDERS.map(async subj => {
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${REPO}/contents/${subj}?ref=${BRANCH}`,
+        { headers: { Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (r.status === 404) return;          // folder missing — skip
+      if (!r.ok) throw new Error(`HTTP ${r.status} for ${subj}`);
+
+      const files = await r.json();
+      if (!Array.isArray(files)) return;
+
+      files
+        .filter(f => f.type === 'file' && f.name.endsWith('.md'))
+        .forEach(f => {
+          const mapId = f.name.replace(/\.md$/, '');
+          maps.push({
+            subject: subj,
+            map:     mapId,
+            name:    mapId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          });
+        });
+    } catch (e) { errors.push(`${subj}: ${e.message}`); }
+  }));
+
+  if (maps.length === 0 && errors.length) {
+    showError(errors.join('<br>'));
+    return;
+  }
+
+  CATALOG = maps.sort((a, b) => a.subject.localeCompare(b.subject) || a.name.localeCompare(b.name));
+
+  try { sessionStorage.setItem('mindatlas_v1', JSON.stringify(CATALOG)); } catch (_) {}
+
+  buildTabs();
+  renderGrid();
+}
+
+/* ══ TABS ════════════════════════════════════════════════════════ */
+function buildTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+
+  const subjects = [...new Set(CATALOG.map(m => m.subject))];
+  el.appendChild(makeTab('All', CATALOG.length));
+  subjects.forEach(s => el.appendChild(makeTab(s, CATALOG.filter(m => m.subject === s).length)));
+}
+
+function makeTab(label, count) {
+  const btn = document.createElement('button');
+  btn.className = 'tab' + (label === activeSubj ? ' active' : '');
+  btn.dataset.s = label;
+  btn.innerHTML = `<span class="dot"></span>${label}<span class="cnt">${count}</span>`;
+  btn.onclick = () => {
+    activeSubj = label;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+  };
+  return btn;
+}
+
+/* ══ GRID ════════════════════════════════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  const info = document.getElementById('rinfo');
+  const q    = query.toLowerCase();
+
+  const list = CATALOG.filter(m => {
+    const okS = activeSubj === 'All' || m.subject === activeSubj;
+    const okQ = !q || m.name.toLowerCase().includes(q) || m.map.toLowerCase().includes(q) || m.subject.toLowerCase().includes(q);
+    return okS && okQ;
+  });
+
+  info.textContent = q ? `${list.length} result${list.length !== 1 ? 's' : ''}` : '';
+  grid.innerHTML = '';
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="ei">🗺️</div><p>No mind maps found — try a different search or add more .md files to the repo.</p></div>`;
+    return;
+  }
+
+  // Grouped by subject when showing All + no search
+  if (activeSubj === 'All' && !q) {
+    [...new Set(list.map(m => m.subject))].forEach(subj => {
+      const m = META[subj] || DEFAULT_META;
+      const hdr = document.createElement('div');
+      hdr.className = 'group-hdr';
+      hdr.innerHTML = `<span style="color:${m.color}">${subj}</span><span class="line"></span>`;
+      grid.appendChild(hdr);
+      list.filter(x => x.subject === subj).forEach((x, i) => {
+        const c = makeCard(x); c.style.animationDelay = `${i * 0.03}s`; grid.appendChild(c);
+      });
+    });
+  } else {
+    list.forEach((x, i) => { const c = makeCard(x); c.style.animationDelay = `${i * 0.03}s`; grid.appendChild(c); });
+  }
+}
+
+function makeCard(m) {
+  const { icon, color } = META[m.subject] || DEFAULT_META;
+  const a = document.createElement('a');
+  a.className = 'map-card';
+  a.style.setProperty('--acc', color);
+  a.href = `index.html?subject=${encodeURIComponent(m.subject)}&map=${encodeURIComponent(m.map)}`;
+  a.innerHTML = `
+    <div class="crow">
+      <div class="cicon" style="background:${color}1f">${icon}</div>
+      <svg class="carrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+    </div>
+    <div class="cname">${m.name}</div>
+    <span class="ctag">${m.subject}</span>
+  `;
+  return a;
+}
+
+/* ══ LOADING / ERROR ═════════════════════════════════════════════ */
+function showLoading() {
+  document.getElementById('grid').innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Fetching from GitHub…</p></div>`;
+  document.getElementById('tabs').innerHTML = '';
+}
+
+function showError(msg) {
+  document.getElementById('grid').innerHTML = `
+    <div class="error-state"><div class="ebox">
+      <h3>⚠ Could not load mind maps</h3>
+      <p>${msg}<br><br>
+      GitHub API allows 60 unauthenticated requests/hr. If you hit that limit, wait a minute and refresh.<br>
+      Direct link example: <code>index.html?subject=Physics&amp;map=kinematics</code></p>
+    </div></div>`;
+}
+
+/* ══ EVENTS ══════════════════════════════════════════════════════ */
+document.getElementById('search').addEventListener('input', e => {
+  query = e.target.value.trim();
+  if (CATALOG.length) renderGrid();
+});
+
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  try { sessionStorage.removeItem('mindatlas_v1'); } catch (_) {}
+  CATALOG = []; activeSubj = 'All'; query = '';
+  document.getElementById('search').value = '';
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  loadCatalog().finally(() => btn.classList.remove('spinning'));
+});
+
+/* ══ BOOT ════════════════════════════════════════════════════════ */
+(function boot() {
+  try {
+    const cached = sessionStorage.getItem('mindatlas_v1');
+    if (cached) {
+      CATALOG = JSON.parse(cached);
+      if (CATALOG.length) { buildTabs(); renderGrid(); return; }
+    }
+  } catch (_) {}
+  loadCatalog();
+})();
+</script>
+</body>
+</html>

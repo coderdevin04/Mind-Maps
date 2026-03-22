@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MindAtlas — Viewer</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9QE4VB9HJK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-9QE4VB9HJK');
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer-when-downgrade">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── BACK BUTTON ── */
+    #back-btn {
+      position: fixed;
+      top: 14px; left: 14px;
+      z-index: 1000;
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px 7px 10px;
+      background: rgba(19,19,22,0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      color: #bbb;
+      backdrop-filter: blur(8px);
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+    #back-btn:hover { color: #fff; border-color: rgba(255,255,255,0.25); background: rgba(30,30,35,0.95); }
+    #back-btn svg { flex-shrink: 0; }
+
+    /* ── BREADCRUMB / TITLE ── */
+    #map-title {
+      position: fixed;
+      top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 1000;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500; color: #888;
+      white-space: nowrap;
+      pointer-events: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+    #map-title .sep { color: #444; }
+    #map-title .name { color: #ddd; }
+
+    /* ── CONTROLS (bottom bar) ── */
+    #controls {
+      position: fixed;
+      bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 1000;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ctrl-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(19,19,22,0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer; color: #bbb;
+      backdrop-filter: blur(8px);
+      transition: all 0.18s;
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+    }
+    .ctrl-btn:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
+    .ctrl-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 2px; }
+
+    /* ── STATUS ── */
+    #status {
+      position: fixed;
+      top: 14px; left: 50%; transform: translateX(-50%);
+      background: #1f2328;
+      color: #ffffff;
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <a id="back-btn" href="landing.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Back
+  </a>
+
+  <div id="map-title" style="display:none">
+    <span id="title-subject"></span>
+    <span class="sep">›</span>
+    <span class="name" id="title-map"></span>
+  </div>
+
+  <div id="status">Loading…</div>
+  <img id="watermark" src="logo.png" alt="">
+  <svg id="mindmap"></svg>
+
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-fit" title="Fit to screen">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-expand" title="Expand all">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5L3 5v3M21 8V5l-2-2h-3M8 21H5l-2-2v-3M21 16v3l-2 2h-3"/></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-collapse" title="Collapse all">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9l7-7 7 7M5 15l7 7 7-7"/></svg>
+    </button>
+    <div class="ctrl-sep"></div>
+    <button class="ctrl-btn" id="fullscreen-btn" title="Fullscreen">
+      <svg viewBox="0 0 24 24" width="15" height="15">
+        <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    /* ── SUBJECT COLOR MAP ── */
+    const SUBJECT_COLORS = {
+      Physics:   '#3b82f6',
+      Chemistry: '#22d3a5',
+      Maths:     '#f59e0b',
+      Biology:   '#a78bfa',
+    };
+
+    async function init() {
+      const status = document.getElementById('status');
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const subject = params.get('subject');
+        const map = params.get('map');
+
+        if (!subject || !map) {
+          throw new Error("No mind map selected. Go back and pick one.");
+        }
+
+        /* Update back button to go to filtered view */
+        const backBtn = document.getElementById('back-btn');
+        backBtn.href = `landing.html?subject=${encodeURIComponent(subject)}`;
+
+        /* Update title */
+        document.title = `${map.replace(/-/g, ' ')} — MindAtlas`;
+        document.getElementById('title-subject').textContent = subject;
+        document.getElementById('title-map').textContent = map.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+        const accentColor = SUBJECT_COLORS[subject] || '#3b82f6';
+        status.textContent = `Loading ${map.replace(/-/g, ' ')}…`;
+
+        const MD_URL = `./${subject}/${map}.md`;
+        const res = await fetch(MD_URL);
+        if (!res.ok) throw new Error(`Mind map "${map}" not found (${res.status})`);
+        const markdown = await res.text();
+
+        const { Transformer, Markmap } = window.markmap;
+        const transformer = new Transformer();
+        const { root } = transformer.transform(markdown);
+
+        status.style.display = 'none';
+        document.getElementById('map-title').style.display = 'flex';
+
+        const mm = Markmap.create('#mindmap', {
+          initialExpandLevel: 2,
+          zoom: true,
+          pan: true,
+          duration: 300,
+          spacingHorizontal: 160,
+          spacingVertical: 15,
+          color: (node) => {
+            if (node.depth === 0) return '#ffffff';
+            if (node.depth === 1) return accentColor;
+            /* Fade deeper nodes */
+            const opacity = Math.max(0.5, 1 - (node.depth - 1) * 0.15);
+            return accentColor + Math.round(opacity * 255).toString(16).padStart(2,'0');
+          },
+          maxWidth: 320,
+        }, root);
+
+        mm.setOptions({ nodeMinHeight: 25, paddingX: 30 });
+
+        /* ── CONTROLS ── */
+        document.getElementById('btn-fit').addEventListener('click', () => mm.fit());
+
+        document.getElementById('btn-expand').addEventListener('click', () => {
+          expandAll(root, mm);
+          setTimeout(() => mm.fit(), 350);
+        });
+
+        document.getElementById('btn-collapse').addEventListener('click', () => {
+          collapseToLevel(root, mm, 1);
+          setTimeout(() => mm.fit(), 350);
+        });
+
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+          else document.exitFullscreen();
+        });
+
+        /* Click node to toggle + recenter */
+        document.getElementById('mindmap').addEventListener('click', (e) => {
+          const nodeGroup = e.target.closest('g[data-id]');
+          if (nodeGroup) {
+            const data = d3.select(nodeGroup).datum();
+            if (data && (data.children || data.payload?.['!children'])) {
+              mm.toggleNode(data);
+              setTimeout(() => mm.fit(), 80);
+            }
+          }
+        });
+
+        /* Initial fit */
+        setTimeout(() => mm.fit(), 250);
+        window.addEventListener('resize', () => mm.fit());
+
+      } catch (err) {
+        status.style.display = 'block';
+        status.style.background = '#7f1d1d';
+        status.style.color = '#fca5a5';
+        status.textContent = '⚠ ' + err.message;
+      }
+    }
+
+    /* ── HELPERS ── */
+    function expandAll(node, mm) {
+      if (node.payload?.fold) {
+        mm.toggleNode(node, false);
+      }
+      (node.children || []).forEach(child => expandAll(child, mm));
+    }
+
+    function collapseToLevel(node, mm, keepLevel) {
+      function walk(n, depth) {
+        if (depth >= keepLevel && n.children?.length) {
+          if (!n.payload?.fold) mm.toggleNode(n, true);
+        }
+        (n.children || []).forEach(c => walk(c, depth + 1));
+      }
+      walk(node, 0);
+    }
+
+    init();
+  </script>
+</body>
+</html>
